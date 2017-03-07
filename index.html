@@ -1,0 +1,57 @@
+<html>
+  <head>
+    <title>Blocks</title>
+    <style type="text/css">
+      html, body {
+        overflow: hidden;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      #container {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      #gameControls {
+        margin-top: 5px;
+      }
+
+      #gameControls > span {
+        background: #f1f1f1;
+        cursor: default;
+        display: inline-block;
+        font-family: sans-serif;
+        padding: 5px;
+        border-radius: 5px;
+        font-size: 10px;
+        color: #7d7d7d;
+        border: 1px solid #eaeaea;
+        min-width: 24px;
+        box-sizing: border-box;
+        text-align: center;
+        box-shadow: 0px 2px 0px 1px #cecece;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="gamecontainer"></div>
+
+      <div id="gameControls">
+        <span title="Move left">&#x2190;</span>
+        <span title="Rotate">&#x2191;</span>
+        <span title="Move down">&#x2193;</span>
+        <span title="Move right">&#x2192;</span>
+        <span title="Drop">SPACE</span>
+        <span title="Pause">P</span>
+      </div>
+    </div>
+    <script type="text/javascript" src="dist/blocks.js"></script>
+  </body>
+</html>
