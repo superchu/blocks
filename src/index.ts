@@ -176,6 +176,7 @@ export default class Blocks {
 
       if (this.isValidPosition(block, this.newX, newY)) {
         this.yPos = newY;
+        this.score++;
       }
     } else {
       let newX = this.xPos + (direction === Direction.Left ? -1 : 1);
@@ -187,11 +188,12 @@ export default class Blocks {
   }
 
   private dropBlock() {
-    let newY = this.yPos;
-    while (this.isValidPosition(this.block, this.xPos, newY + 1)) {
-      newY++;
+    let rows = 0;
+    while (this.isValidPosition(this.block, this.xPos, this.yPos + rows + 1)) {
+      rows++;
     }
-    this.yPos = newY;
+    this.yPos += rows;
+    this.score += rows * 2;
   }
 
   private isValidPosition(block: number[][], xPos: number, yPos: number): boolean {
@@ -219,7 +221,7 @@ export default class Blocks {
   }
 
   private mergeCurrentBlock() {
-    const { block, xPos, yPos } = this;
+    const { block, xPos, yPos, rows } = this;
 
     block.forEach((row, rowY) => {
       row.forEach((column, rowX) => {
@@ -227,7 +229,7 @@ export default class Blocks {
           const x = xPos + rowX;
           const y = yPos + rowY;
 
-          this.rows[yPos + rowY][xPos + rowX] = column;
+          rows[yPos + rowY][xPos + rowX] = column;
         }
       });
     });
