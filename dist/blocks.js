@@ -1189,6 +1189,7 @@ var Blocks = function () {
                 var newY = this.yPos + 1;
                 if (this.isValidPosition(block, this.newX, newY)) {
                     this.yPos = newY;
+                    this.score++;
                 }
             } else {
                 var newX = this.xPos + (direction === Direction.Left ? -1 : 1);
@@ -1200,11 +1201,12 @@ var Blocks = function () {
     }, {
         key: "dropBlock",
         value: function dropBlock() {
-            var newY = this.yPos;
-            while (this.isValidPosition(this.block, this.xPos, newY + 1)) {
-                newY++;
+            var rows = 0;
+            while (this.isValidPosition(this.block, this.xPos, this.yPos + rows + 1)) {
+                rows++;
             }
-            this.yPos = newY;
+            this.yPos += rows;
+            this.score += rows * 2;
         }
     }, {
         key: "isValidPosition",
@@ -1234,18 +1236,17 @@ var Blocks = function () {
     }, {
         key: "mergeCurrentBlock",
         value: function mergeCurrentBlock() {
-            var _this3 = this;
-
             var block = this.block,
                 xPos = this.xPos,
-                yPos = this.yPos;
+                yPos = this.yPos,
+                rows = this.rows;
 
             block.forEach(function (row, rowY) {
                 row.forEach(function (column, rowX) {
                     if (column !== 0) {
                         var x = xPos + rowX;
                         var y = yPos + rowY;
-                        _this3.rows[yPos + rowY][xPos + rowX] = column;
+                        rows[yPos + rowY][xPos + rowX] = column;
                     }
                 });
             });
@@ -1270,13 +1271,13 @@ var Blocks = function () {
     }, {
         key: "rotateBlock",
         value: function rotateBlock(direction) {
-            var _this4 = this;
+            var _this3 = this;
 
             var newBlock = [];
             this.block.forEach(function (row, y) {
                 row.forEach(function (column, x) {
-                    var yy = direction === Direction.Right ? x : _this4.block.length - 1 - x;
-                    var xx = direction === Direction.Right ? _this4.block.length - 1 - y : y;
+                    var yy = direction === Direction.Right ? x : _this3.block.length - 1 - x;
+                    var xx = direction === Direction.Right ? _this3.block.length - 1 - y : y;
                     newBlock[yy] = newBlock[yy] || [];
                     newBlock[yy][xx] = column;
                 });
@@ -1288,7 +1289,7 @@ var Blocks = function () {
     }, {
         key: "clearFullRows",
         value: function clearFullRows() {
-            var _this5 = this;
+            var _this4 = this;
 
             var rowCount = 0;
             var rows = [].concat((0, _toConsumableArray3.default)(this.rows));
@@ -1296,8 +1297,8 @@ var Blocks = function () {
                 if (!row.some(function (column) {
                     return column === 0;
                 })) {
-                    _this5.rows.splice(index, 1);
-                    _this5.rows.unshift(row.map(function (column) {
+                    _this4.rows.splice(index, 1);
+                    _this4.rows.unshift(row.map(function (column) {
                         return 0;
                     }));
                     rowCount++;
@@ -1309,7 +1310,7 @@ var Blocks = function () {
     }, {
         key: "mainloop",
         value: function mainloop() {
-            var _this6 = this;
+            var _this5 = this;
 
             if (this.gameState === GameState.Playing) {
                 this.gameTime++;
@@ -1317,7 +1318,7 @@ var Blocks = function () {
             }
             this.render(this.gameTime, this.ctx);
             window.requestAnimationFrame(function () {
-                return _this6.mainloop();
+                return _this5.mainloop();
             });
         }
     }, {
@@ -1351,14 +1352,14 @@ var Blocks = function () {
     }, {
         key: "renderCurrentBlock",
         value: function renderCurrentBlock(ctx) {
-            var _this7 = this;
+            var _this6 = this;
 
             ctx.save();
             ctx.translate(this.xPos * BLOCK_SIZE, this.yPos * BLOCK_SIZE);
             // Render currentBlock
             this.block.forEach(function (row, y) {
                 row.forEach(function (column, x) {
-                    return _this7.renderBlock(x, y, column, ctx);
+                    return _this6.renderBlock(x, y, column, ctx);
                 });
             });
             ctx.restore();
@@ -1375,14 +1376,14 @@ var Blocks = function () {
     }, {
         key: "render",
         value: function render(gameTime, ctx) {
-            var _this8 = this;
+            var _this7 = this;
 
             ctx.fillStyle = '#d2f0ea';
             ctx.fillRect(0, 0, this.width, this.height);
             // Render rows
             this.rows.forEach(function (row, y) {
                 row.forEach(function (column, x) {
-                    return _this8.renderBlock(x, y, column, ctx);
+                    return _this7.renderBlock(x, y, column, ctx);
                 });
             });
             if (this.block) {
