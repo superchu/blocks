@@ -1067,6 +1067,10 @@ var _createClass3 = _interopRequireDefault(_createClass2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/*
+ * Blocks game by Oscar Wallhult
+ *
+ */
 var GameState;
 (function (GameState) {
     GameState[GameState["Playing"] = 0] = "Playing";
@@ -1155,7 +1159,7 @@ var Blocks = function () {
                 }
             }
             if (!isPlaying) {
-                if (this.gameState !== GameState.Paused) {
+                if (this.gameState === GameState.GameOver) {
                     this.reset();
                 }
                 return;

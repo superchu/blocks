@@ -144,7 +144,7 @@ export default class Blocks {
     }
 
     if (!isPlaying) {
-      if (this.gameState !== GameState.Paused) {
+      if (this.gameState === GameState.GameOver) {
         this.reset();
       }
 
