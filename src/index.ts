@@ -56,6 +56,8 @@ const BLOCKS = [
   ]
 ];
 
+type BlockColor = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
 const COLORS = {
   1: '#fc9f4f',
   2: '#c0a3f5',
@@ -83,11 +85,11 @@ export default class Blocks {
   private gameTime: number = 0;
   private gameState: GameState = GameState.Paused;
 
-  private _block: number[][] | null;
-  private get block(): number[][] {
+  private _block: BlockColor[][] | null;
+  private get block(): BlockColor[][] {
     if (!this._block) {
       this.yPos = 0;
-      this._block = BLOCKS[Math.floor(Math.random() * BLOCKS.length)];
+      this._block = BLOCKS[Math.floor(Math.random() * BLOCKS.length)] as BlockColor[][];
       this.xPos = Math.floor(((this.width / BLOCK_SIZE) - this._block[0].length) / 2);
       this.newX = this.xPos;
     }
@@ -98,13 +100,13 @@ export default class Blocks {
   private newX: number;
   private xPos: number;
   private yPos: number;
-  private rows: number[][] = [];
+  private rows: BlockColor[][] = [];
   private level: number;
   private score: number;
   private lockDelay: number;
 
-  constructor(selector, private width, private height) {
-    this.container = document.querySelector(selector);
+  constructor(selector: string, private width: number, private height: number) {
+    this.container = document.querySelector(selector) as HTMLElement;
     this.canvas = document.createElement('canvas');
     this.canvas.width = this.width;
     this.canvas.height = this.height;
@@ -251,7 +253,7 @@ export default class Blocks {
   }
 
   private rotateBlock(direction: Direction) {
-    const newBlock: number[][] = [];
+    const newBlock: BlockColor[][] = [];
 
     this.block.forEach((row, y) => {
       row.forEach((column, x) => {
@@ -274,7 +276,7 @@ export default class Blocks {
     rows.forEach((row, index) => {
       if (!row.some(column => column === 0)) {
         this.rows.splice(index, 1);
-        this.rows.unshift(row.map(column => 0));
+        this.rows.unshift(row.map(column => 0 as BlockColor));
         rowCount++;
       }
     });
@@ -313,7 +315,7 @@ export default class Blocks {
     }
   }
 
-  renderBlock(x: number, y: number, color: number, ctx: CanvasRenderingContext2D) {
+  renderBlock(x: number, y: number, color: BlockColor, ctx: CanvasRenderingContext2D) {
     if (color !== 0) {
       ctx.fillStyle = COLORS[color];
       ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
