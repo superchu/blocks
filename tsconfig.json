@@ -1,17 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es2015",
-    "jsx": "react",
-    "noImplicitAny": true,
-    "strictNullChecks": true,
+    "target": "ESNext",
+    "module": "ESNext",
     "moduleResolution": "node",
-    "lib": [
-      "dom",
-      "es2015",
-      "scripthost"
-    ]
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }

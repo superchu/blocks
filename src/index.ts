@@ -85,7 +85,7 @@ export default class Blocks {
   private gameTime: number = 0;
   private gameState: GameState = GameState.Paused;
 
-  private _block: BlockColor[][] | null;
+  private _block: BlockColor[][] | null = null;
   private get block(): BlockColor[][] {
     if (!this._block) {
       this.yPos = 0;
@@ -97,13 +97,13 @@ export default class Blocks {
     return this._block;
   }
 
-  private newX: number;
-  private xPos: number;
-  private yPos: number;
+  private newX: number = 0;
+  private xPos: number = 0;
+  private yPos: number = 0;
   private rows: BlockColor[][] = [];
-  private level: number;
-  private score: number;
-  private lockDelay: number;
+  private level: number = 0;
+  private score: number = 0;
+  private lockDelay: number = 0;
 
   constructor(selector: string, private width: number, private height: number) {
     this.container = document.querySelector(selector) as HTMLElement;
