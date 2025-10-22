@@ -138,6 +138,13 @@ export default class Blocks {
     document.addEventListener('touchstart', e => this.onTouchStart(e));
     document.addEventListener('touchmove', e => this.onTouchMove(e));
     document.addEventListener('touchend', e => this.onTouchEnd(e));
+    document.addEventListener('click', e => this.onClick(e));
+  }
+
+  private onClick(e: PointerEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.rotateBlock(Direction.Right);
   }
 
   private onTouchStart(e: TouchEvent) {
@@ -165,7 +172,7 @@ export default class Blocks {
       }
     } else {
       if (yDiff > 0) {
-        this.rotateBlock(Direction.Right);
+        // this.rotateBlock(Direction.Right);
       } else {
         this.move(this.block, Direction.Down);
       }
