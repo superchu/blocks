@@ -79,74 +79,114 @@ const ROW_POINTS = [0, 40, 100, 300, 1200];
 const LOCK_DELAY = 2;
 
 export default class Blocks {
-  private readonly container: HTMLElement;
-  private readonly canvas: HTMLCanvasElement;
-  private readonly ctx: CanvasRenderingContext2D;
-  private gameTime: number = 0;
-  private gameState: GameState = GameState.Paused;
+  private readonly _container: HTMLElement;
+  private readonly _canvas: HTMLCanvasElement;
+  private readonly _ctx: CanvasRenderingContext2D;
+  private _gameTime: number = 0;
+  private _gameState: GameState = GameState.Paused;
 
   private _block: BlockColor[][] | null = null;
   private get block(): BlockColor[][] {
     if (!this._block) {
-      this.yPos = 0;
+      this._yPos = 0;
       this._block = BLOCKS[Math.floor(Math.random() * BLOCKS.length)] as BlockColor[][];
-      this.xPos = Math.floor(((this.width / BLOCK_SIZE) - this._block[0].length) / 2);
-      this.newX = this.xPos;
+      this._xPos = Math.floor(((this.width / BLOCK_SIZE) - this._block[0].length) / 2);
+      this._newX = this._xPos;
     }
 
     return this._block;
   }
 
-  private newX: number = 0;
-  private xPos: number = 0;
-  private yPos: number = 0;
-  private rows: BlockColor[][] = [];
-  private level: number = 0;
-  private score: number = 0;
-  private lockDelay: number = 0;
+  private _newX: number = 0;
+  private _xPos: number = 0;
+  private _yPos: number = 0;
+  private _rows: BlockColor[][] = [];
+  private _level: number = 0;
+  private _score: number = 0;
+  private _lockDelay: number = 0;
+  private _xDown: number | null = null;
+  private _yDown: number | null = null;
 
   constructor(selector: string, private width: number, private height: number) {
-    this.container = document.querySelector(selector) as HTMLElement;
-    this.canvas = document.createElement('canvas');
-    this.canvas.width = this.width;
-    this.canvas.height = this.height;
-    this.ctx = this.canvas.getContext('2d')!;
-    this.container.appendChild(this.canvas);
+    this._container = document.querySelector(selector) as HTMLElement;
+    this._canvas = document.createElement('canvas');
+    this._canvas.width = this.width;
+    this._canvas.height = this.height;
+    this._ctx = this._canvas.getContext('2d')!;
+    this._container.appendChild(this._canvas);
 
     this.reset();
-    this.bindKeys();
+    this.bindInputs();
     this.mainloop();
   }
 
   private reset() {
-    this.lockDelay = 0;
+    this._lockDelay = 0;
     this._block = null;
-    this.level = 0;
-    this.score = 0;
+    this._level = 0;
+    this._score = 0;
 
-    this.xPos = (this.width / BLOCK_SIZE) / 2;
-    this.yPos = 0;
+    this._xPos = (this.width / BLOCK_SIZE) / 2;
+    this._yPos = 0;
     this.fillRows();
 
-    this.gameState = GameState.Playing;
+    this._gameState = GameState.Playing;
   }
 
-  private bindKeys() {
+  private bindInputs() {
     document.addEventListener('keydown', e => this.onKeyDown(e));
+    document.addEventListener('touchstart', e => this.onTouchStart(e));
+    document.addEventListener('touchmove', e => this.onTouchMove(e));
+    document.addEventListener('touchend', e => this.onTouchEnd(e));
   }
+
+  private onTouchStart(e: TouchEvent) {
+    e.preventDefault();
+    const { clientX, clientY } = e.touches[0];
+    this._xDown = clientX;
+    this._yDown = clientY;
+  }
+
+  private onTouchMove(e: TouchEvent) {
+    const { _xDown: xDown, _yDown: yDown } = this;
+    if (!xDown || !yDown) {
+      return;
+    }
+
+    const { clientX, clientY } = e.touches[0];
+    const xDiff = xDown - clientX;
+    const yDiff = yDown - clientY;
+
+    if (Math.abs(xDiff) > Math.abs(yDiff)) {
+      if (xDiff > 0) {
+        this.move(this.block, Direction.Left);
+      } else {
+        this.move(this.block, Direction.Right);
+      }
+    } else {
+      if (yDiff > 0) {
+        this.rotateBlock(Direction.Right);
+      } else {
+        this.move(this.block, Direction.Down);
+      }
+    }
+  }
+
+  private onTouchEnd(e: TouchEvent) { }
+
 
   private onKeyDown(e: KeyboardEvent) {
-    const isPlaying = this.gameState === GameState.Playing;
+    const isPlaying = this._gameState === GameState.Playing;
     if (e.keyCode === Key.P) {
       if (isPlaying) {
-        this.gameState = GameState.Paused;
+        this._gameState = GameState.Paused;
       } else {
-        this.gameState = GameState.Playing;
+        this._gameState = GameState.Playing;
       }
     }
 
     if (!isPlaying) {
-      if (this.gameState === GameState.GameOver) {
+      if (this._gameState === GameState.GameOver) {
         this.reset();
       }
 
@@ -174,28 +214,28 @@ export default class Blocks {
 
   private move(block: number[][], direction: Direction) {
     if (direction === Direction.Down) {
-      let newY = this.yPos + 1;
+      let newY = this._yPos + 1;
 
-      if (this.isValidPosition(block, this.newX, newY)) {
-        this.yPos = newY;
-        this.score++;
+      if (this.isValidPosition(block, this._newX, newY)) {
+        this._yPos = newY;
+        this._score++;
       }
     } else {
-      let newX = this.xPos + (direction === Direction.Left ? -1 : 1);
+      let newX = this._xPos + (direction === Direction.Left ? -1 : 1);
 
-      if (this.isValidPosition(block, newX, this.yPos)) {
-        this.newX = newX;
+      if (this.isValidPosition(block, newX, this._yPos)) {
+        this._newX = newX;
       }
     }
   }
 
   private dropBlock() {
     let rows = 0;
-    while (this.isValidPosition(this.block, this.xPos, this.yPos + rows + 1)) {
+    while (this.isValidPosition(this.block, this._xPos, this._yPos + rows + 1)) {
       rows++;
     }
-    this.yPos += rows;
-    this.score += rows * 2;
+    this._yPos += rows;
+    this._score += rows * 2;
   }
 
   private isValidPosition(block: number[][], xPos: number, yPos: number): boolean {
@@ -212,7 +252,7 @@ export default class Blocks {
             isValid = false;
           } else if (y >= this.height / BLOCK_SIZE) {
             isValid = false;
-          } else if (this.rows[yPos + rowY][xPos + rowX]) {
+          } else if (this._rows[yPos + rowY][xPos + rowX]) {
             isValid = false;
           }
         }
@@ -223,7 +263,7 @@ export default class Blocks {
   }
 
   private mergeCurrentBlock() {
-    const { block, xPos, yPos, rows } = this;
+    const { block, _xPos: xPos, _yPos: yPos, _rows: rows } = this;
 
     block.forEach((row, rowY) => {
       row.forEach((column, rowX) => {
@@ -236,13 +276,13 @@ export default class Blocks {
       });
     });
 
-    this.yPos = 0;
+    this._yPos = 0;
     this._block = null;
-    this.lockDelay = 0;
+    this._lockDelay = 0;
   }
 
   private fillRows() {
-    const { rows, width, height } = this;
+    const { _rows: rows, width, height } = this;
 
     for (let y = 0; y < height / BLOCK_SIZE; y++) {
       rows[y] = [];
@@ -265,50 +305,50 @@ export default class Blocks {
 
     });
 
-    if (this.isValidPosition(newBlock, this.newX, this.yPos)) {
+    if (this.isValidPosition(newBlock, this._newX, this._yPos)) {
       this._block = newBlock;
     }
   }
 
   private clearFullRows() {
     let rowCount = 0;
-    const rows = [...this.rows];
+    const rows = [...this._rows];
     rows.forEach((row, index) => {
       if (!row.some(column => column === 0)) {
-        this.rows.splice(index, 1);
-        this.rows.unshift(row.map(column => 0 as BlockColor));
+        this._rows.splice(index, 1);
+        this._rows.unshift(row.map(column => 0 as BlockColor));
         rowCount++;
       }
     });
 
-    this.score += (Math.floor(this.level) + 1) * ROW_POINTS[rowCount];
-    this.level += rowCount / 10;
+    this._score += (Math.floor(this._level) + 1) * ROW_POINTS[rowCount];
+    this._level += rowCount / 10;
   }
 
   private mainloop() {
-    if (this.gameState === GameState.Playing) {
-      this.gameTime++;
-      this.update(this.gameTime);
+    if (this._gameState === GameState.Playing) {
+      this._gameTime++;
+      this.update(this._gameTime);
     }
-    this.render(this.gameTime, this.ctx);
+    this.render(this._gameTime, this._ctx);
     window.requestAnimationFrame(() => this.mainloop());
   }
 
   update(gameTime: number) {
-    this.xPos = this.newX;
-    const speed = Math.max(1, 10 - Math.floor(this.level));
+    this._xPos = this._newX;
+    const speed = Math.max(1, 10 - Math.floor(this._level));
 
     if (gameTime % speed === 0) {
-      let newY = this.yPos + 1;
-      if (this.isValidPosition(this.block, this.xPos, newY)) {
-        this.yPos = newY;
-      } else if (this.yPos === 0) {
-        this.gameState = GameState.GameOver;
+      let newY = this._yPos + 1;
+      if (this.isValidPosition(this.block, this._xPos, newY)) {
+        this._yPos = newY;
+      } else if (this._yPos === 0) {
+        this._gameState = GameState.GameOver;
       } else {
-        if (this.lockDelay >= LOCK_DELAY) {
+        if (this._lockDelay >= LOCK_DELAY) {
           this.mergeCurrentBlock();
         }
-        this.lockDelay++;
+        this._lockDelay++;
       }
 
       this.clearFullRows();
@@ -324,7 +364,7 @@ export default class Blocks {
 
   renderCurrentBlock(ctx: CanvasRenderingContext2D) {
     ctx.save();
-    ctx.translate(this.xPos * BLOCK_SIZE, this.yPos * BLOCK_SIZE);
+    ctx.translate(this._xPos * BLOCK_SIZE, this._yPos * BLOCK_SIZE);
 
     // Render currentBlock
     this.block.forEach((row, y) => {
@@ -347,7 +387,7 @@ export default class Blocks {
     ctx.fillRect(0, 0, this.width, this.height);
 
     // Render rows
-    this.rows.forEach((row, y) => {
+    this._rows.forEach((row, y) => {
       row.forEach((column, x) => this.renderBlock(x, y, column, ctx));
     });
 
@@ -357,10 +397,10 @@ export default class Blocks {
 
     ctx.font = '12px sans-serif';
     ctx.fillStyle = '#505e79';
-    ctx.fillText(`${this.score}`, 10, 20);
+    ctx.fillText(`${this._score}`, 10, 20);
 
 
-    if (this.gameState === GameState.GameOver) {
+    if (this._gameState === GameState.GameOver) {
       this.renderGameOver(ctx);
     }
   }
