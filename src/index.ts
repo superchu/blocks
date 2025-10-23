@@ -74,7 +74,7 @@ enum Direction {
   Down
 }
 
-const BLOCK_SIZE = 10;
+const BLOCK_SIZE = 20;
 const ROW_POINTS = [0, 40, 100, 300, 1200];
 const LOCK_DELAY = 2;
 
@@ -82,6 +82,7 @@ export default class Blocks {
   private readonly _container: HTMLElement;
   private readonly _canvas: HTMLCanvasElement;
   private readonly _ctx: CanvasRenderingContext2D;
+  private readonly _framerate: number = 1000 / 100;
   private _gameTime: number = 0;
   private _gameState: GameState = GameState.Paused;
 
@@ -106,6 +107,7 @@ export default class Blocks {
   private _lockDelay: number = 0;
   private _xDown: number | null = null;
   private _yDown: number | null = null;
+  private _lastUpdate: number = Date.now();
 
   constructor(selector: string, private width: number, private height: number) {
     this._container = document.querySelector(selector) as HTMLElement;
@@ -333,9 +335,14 @@ export default class Blocks {
   }
 
   private mainloop() {
+    const deltaTime = Date.now() - this._lastUpdate;
+
     if (this._gameState === GameState.Playing) {
-      this._gameTime++;
-      this.update(this._gameTime);
+      if (deltaTime >= this._framerate) {
+        this._lastUpdate = Date.now();
+        this._gameTime++;
+        this.update(this._gameTime);
+      }
     }
     this.render(this._gameTime, this._ctx);
     window.requestAnimationFrame(() => this.mainloop());
@@ -402,10 +409,9 @@ export default class Blocks {
       this.renderCurrentBlock(ctx);
     }
 
-    ctx.font = '12px sans-serif';
+    ctx.font = '20px sans-serif';
     ctx.fillStyle = '#505e79';
-    ctx.fillText(`${this._score}`, 10, 20);
-
+    ctx.fillText(`${this._score}`, 15, 30);
 
     if (this._gameState === GameState.GameOver) {
       this.renderGameOver(ctx);
