@@ -172,11 +172,16 @@ export default class Blocks {
       } else {
         this.move(this.block, Direction.Right);
       }
+      this._xDown = clientX;
+      this._yDown = clientY;
     } else {
       if (yDiff > 0) {
         // this.rotateBlock(Direction.Right);
       } else {
         this.move(this.block, Direction.Down);
+
+        this._xDown = clientX;
+        this._yDown = clientY;
       }
     }
   }
