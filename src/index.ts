@@ -182,7 +182,7 @@ export default class Blocks {
       if (yDiff > sense) {
         // this.rotateBlock(Direction.Right);
       } else if (yDiff < -sense) {
-        this.move(this.block, Direction.Down);
+        this.dropBlock();
       }
       this._xDown = clientX;
       this._yDown = clientY;
