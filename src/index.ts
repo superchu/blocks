@@ -165,11 +165,12 @@ export default class Blocks {
     const { clientX, clientY } = e.touches[0];
     const xDiff = xDown - clientX;
     const yDiff = yDown - clientY;
+    const sense = 10;
 
     if (Math.abs(xDiff) > Math.abs(yDiff)) {
-      if (xDiff > 1) {
+      if (xDiff > sense) {
         this.move(this.block, Direction.Left);
-      } else if (xDiff < -1) {
+      } else if (xDiff < -sense) {
         this.move(this.block, Direction.Right);
       }
       this._xDown = clientX;
