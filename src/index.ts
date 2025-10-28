@@ -146,7 +146,7 @@ export default class Blocks {
   private onClick(e: PointerEvent) {
     e.preventDefault();
     e.stopPropagation();
-    //this.rotateBlock(Direction.Right);
+    // this.rotateBlock(Direction.Right);
   }
 
   private onTouchStart(e: TouchEvent) {
