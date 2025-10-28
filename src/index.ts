@@ -140,13 +140,16 @@ export default class Blocks {
     document.addEventListener('touchstart', e => this.onTouchStart(e));
     document.addEventListener('touchmove', e => this.onTouchMove(e));
     document.addEventListener('touchend', e => this.onTouchEnd(e));
-    document.addEventListener('mouseup', e => this.onClick(e));
+    document.addEventListener('mousedown', e => this.onClick(e));
   }
 
   private onClick(e: PointerEvent) {
     e.preventDefault();
     e.stopPropagation();
-    this.rotateBlock(Direction.Right);
+
+    if (this._gameState === GameState.Playing) {
+      this.rotateBlock(Direction.Right);
+    }
   }
 
   private onTouchStart(e: TouchEvent) {
