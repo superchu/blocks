@@ -176,9 +176,9 @@ export default class Blocks {
       // this._xDown = clientX;
       // this._yDown = clientY;
     } else {
-      if (yDiff > 1) {
+      if (yDiff > sense) {
         // this.rotateBlock(Direction.Right);
-      } else if (yDiff < -1) {
+      } else if (yDiff < -sense) {
         this.move(this.block, Direction.Down);
 
         // this._xDown = clientX;
