@@ -358,7 +358,7 @@ export default class Blocks {
 
   update(gameTime: number) {
     this._xPos = this._newX;
-    const speed = Math.max(1, 10 - Math.floor(this._level));
+    const speed = Math.max(1, 20 - Math.floor(this._level));
 
     if (gameTime % speed === 0) {
       let newY = this._yPos + 1;
