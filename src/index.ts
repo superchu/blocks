@@ -165,7 +165,7 @@ export default class Blocks {
     const { clientX, clientY } = e.touches[0];
     const xDiff = xDown - clientX;
     const yDiff = yDown - clientY;
-    const sense = 10;
+    const sense = 5;
 
     if (Math.abs(xDiff) > Math.abs(yDiff)) {
       if (xDiff > sense) {
@@ -173,16 +173,16 @@ export default class Blocks {
       } else if (xDiff < -sense) {
         this.move(this.block, Direction.Right);
       }
-      // this._xDown = clientX;
-      // this._yDown = clientY;
+      this._xDown = clientX;
+      this._yDown = clientY;
     } else {
       if (yDiff > sense) {
         // this.rotateBlock(Direction.Right);
       } else if (yDiff < -sense) {
         this.move(this.block, Direction.Down);
 
-        // this._xDown = clientX;
-        // this._yDown = clientY;
+        this._xDown = clientX;
+        this._yDown = clientY;
       }
     }
   }
