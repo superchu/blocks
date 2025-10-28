@@ -167,17 +167,17 @@ export default class Blocks {
     const yDiff = yDown - clientY;
 
     if (Math.abs(xDiff) > Math.abs(yDiff)) {
-      if (xDiff > 0) {
+      if (xDiff > 1) {
         this.move(this.block, Direction.Left);
-      } else {
+      } else if (xDiff < -1) {
         this.move(this.block, Direction.Right);
       }
       this._xDown = clientX;
       this._yDown = clientY;
     } else {
-      if (yDiff > 0) {
+      if (yDiff > 1) {
         // this.rotateBlock(Direction.Right);
-      } else {
+      } else if (yDiff < -1) {
         this.move(this.block, Direction.Down);
 
         this._xDown = clientX;
