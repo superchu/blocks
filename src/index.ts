@@ -108,6 +108,7 @@ export default class Blocks {
   private _xDown: number | null = null;
   private _yDown: number | null = null;
   private _lastUpdate: number = Date.now();
+  private _performingGesture = false;
 
   constructor(selector: string, private width: number, private height: number) {
     this._container = document.querySelector(selector) as HTMLElement;
@@ -147,7 +148,7 @@ export default class Blocks {
     e.preventDefault();
     e.stopPropagation();
 
-    if (this._gameState === GameState.Playing) {
+    if (this._gameState === GameState.Playing && !this._performingGesture) {
       this.rotateBlock(Direction.Right);
     }
   }
@@ -176,21 +177,24 @@ export default class Blocks {
       } else if (xDiff < -sense) {
         this.move(this.block, Direction.Right);
       }
-      this._xDown = clientX;
-      this._yDown = clientY;
     } else {
       if (yDiff > sense) {
         // this.rotateBlock(Direction.Right);
       } else if (yDiff < -sense) {
         this.dropBlock();
       }
+    }
+
+    if (Math.abs(xDiff) > sense || Math.abs(yDiff) > sense) {
+      this._performingGesture = true;
       this._xDown = clientX;
       this._yDown = clientY;
     }
   }
 
-  private onTouchEnd(e: TouchEvent) { }
-
+  private onTouchEnd(e: TouchEvent) {
+    this._performingGesture = false;
+  }
 
   private onKeyDown(e: KeyboardEvent) {
     const isPlaying = this._gameState === GameState.Playing;
