@@ -56,7 +56,7 @@ const BLOCKS = [
   ]
 ];
 
-type BlockColor = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+type BlockType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 const COLORS = {
   1: { main: '#ff9423', highlight: '#ffb362', shadow: '#cf6d07' },
@@ -65,7 +65,10 @@ const COLORS = {
   4: { main: '#238eff', highlight: '#62aeff', shadow: '#0768cf' },
   5: { main: '#23ff61', highlight: '#62ff8f', shadow: '#07cf3e' },
   6: { main: '#ff4423', highlight: '#ff7a62', shadow: '#cf2307' },
-  7: { main: '#ffc423', highlight: '#ffd562', shadow: '#cf9807' }
+  7: { main: '#ffc423', highlight: '#ffd562', shadow: '#cf9807' },
+
+  // Shadow-block
+  8: { main: '#fff', highlight: '#fff', shadow: '#fff' }
 };
 
 enum Direction {
@@ -86,11 +89,11 @@ export default class Blocks {
   private _gameTime: number = 0;
   private _gameState: GameState = GameState.Paused;
 
-  private _block: BlockColor[][] | null = null;
-  private get block(): BlockColor[][] {
+  private _block: BlockType[][] | null = null;
+  private get block(): BlockType[][] {
     if (!this._block) {
       this._yPos = 0;
-      this._block = BLOCKS[Math.floor(Math.random() * BLOCKS.length)] as BlockColor[][];
+      this._block = BLOCKS[Math.floor(Math.random() * BLOCKS.length)] as BlockType[][];
       this._xPos = Math.floor(((this.width / BLOCK_SIZE) - this._block[0].length) / 2);
       this._newX = this._xPos;
     }
@@ -98,10 +101,20 @@ export default class Blocks {
     return this._block;
   }
 
+  private get shadowBlockY(): number {
+    var y = this._yPos;
+    let rows = 0;
+    while (this.isValidPosition(this.block, this._xPos, this._yPos + rows + 1)) {
+      rows++;
+    }
+
+    return this._yPos + rows;
+  }
+
   private _newX: number = 0;
   private _xPos: number = 0;
   private _yPos: number = 0;
-  private _rows: BlockColor[][] = [];
+  private _rows: BlockType[][] = [];
   private _level: number = 0;
   private _score: number = 0;
   private _lockDelay: number = 0;
@@ -317,7 +330,7 @@ export default class Blocks {
   }
 
   private rotateBlock(direction: Direction) {
-    const newBlock: BlockColor[][] = [];
+    const newBlock: BlockType[][] = [];
 
     this.block.forEach((row, y) => {
       row.forEach((column, x) => {
@@ -340,7 +353,7 @@ export default class Blocks {
     rows.forEach((row, index) => {
       if (!row.some(column => column === 0)) {
         this._rows.splice(index, 1);
-        this._rows.unshift(row.map(column => 0 as BlockColor));
+        this._rows.unshift(row.map(column => 0 as BlockType));
         rowCount++;
       }
     });
@@ -384,25 +397,27 @@ export default class Blocks {
     }
   }
 
-  renderBlock(x: number, y: number, color: BlockColor, ctx: CanvasRenderingContext2D) {
+  renderBlock(x: number, y: number, color: BlockType, ctx: CanvasRenderingContext2D, isShadowBlock: boolean = false) {
     ctx.save();
     ctx.translate(x * BLOCK_SIZE, y * BLOCK_SIZE);
     if (color !== 0) {
-      var blockColor = COLORS[color];
+      var blockColor = isShadowBlock ? COLORS[8] : COLORS[color];
       ctx.fillStyle = blockColor.main;
       ctx.fillRect(1, 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
 
-      ctx.fillStyle = blockColor.highlight;
-      ctx.fillRect(1, 1, BLOCK_SIZE - 2, 2);
+      if (!isShadowBlock) {
+        ctx.fillStyle = blockColor.highlight;
+        ctx.fillRect(1, 1, BLOCK_SIZE - 2, 2);
 
-      ctx.fillStyle = blockColor.shadow;
-      ctx.fillRect(1, BLOCK_SIZE - 2, BLOCK_SIZE - 2, 2);
+        ctx.fillStyle = blockColor.shadow;
+        ctx.fillRect(1, BLOCK_SIZE - 2, BLOCK_SIZE - 2, 2);
 
-      ctx.fillRect(4, 5, BLOCK_SIZE - 9, 2);
-      ctx.fillRect(4, BLOCK_SIZE - 6, BLOCK_SIZE - 8, 2);
+        ctx.fillRect(4, 5, BLOCK_SIZE - 9, 2);
+        ctx.fillRect(4, BLOCK_SIZE - 6, BLOCK_SIZE - 8, 2);
 
-      ctx.fillRect(4, 5, 2, BLOCK_SIZE - 10);
-      ctx.fillRect(BLOCK_SIZE - 6, 5, 2, BLOCK_SIZE - 10);
+        ctx.fillRect(4, 5, 2, BLOCK_SIZE - 10);
+        ctx.fillRect(BLOCK_SIZE - 6, 5, 2, BLOCK_SIZE - 10);
+      }
     }
     ctx.restore();
   }
@@ -411,10 +426,23 @@ export default class Blocks {
     ctx.save();
     ctx.translate(this._xPos * BLOCK_SIZE, this._yPos * BLOCK_SIZE);
 
-    // Render currentBlock
     this.block.forEach((row, y) => {
       row.forEach((blockColor, x) => this.renderBlock(x, y, blockColor, ctx));
     });
+
+    ctx.restore();
+  }
+
+  renderShadowBlock(ctx: CanvasRenderingContext2D) {
+    ctx.save();
+    ctx.translate(this._xPos * BLOCK_SIZE, this.shadowBlockY * BLOCK_SIZE);
+
+    ctx.globalAlpha = .2;
+
+    this.block.forEach((row, y) => {
+      row.forEach((blockColor, x) => this.renderBlock(x, y, blockColor, ctx, true));
+    });
+
     ctx.restore();
   }
 
@@ -437,6 +465,7 @@ export default class Blocks {
     });
 
     if (this.block) {
+      this.renderShadowBlock(ctx);
       this.renderCurrentBlock(ctx);
     }
 
