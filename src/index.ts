@@ -59,13 +59,13 @@ const BLOCKS = [
 type BlockColor = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 const COLORS = {
-  1: '#fc9f4f',
-  2: '#c0a3f5',
-  3: '#8a96ad',
-  4: '#a8d0fe',
-  5: '#90bf5e',
-  6: '#ff7586',
-  7: '#ffd45c'
+  1: { main: '#ff9423', highlight: '#ffb362', shadow: '#cf6d07' },
+  2: { main: '#b923ff', highlight: '#cd62ff', shadow: '#8f07cf' },
+  3: { main: '#919191', highlight: '#b0b0b0', shadow: '#6b6b6b' },
+  4: { main: '#238eff', highlight: '#62aeff', shadow: '#0768cf' },
+  5: { main: '#23ff61', highlight: '#62ff8f', shadow: '#07cf3e' },
+  6: { main: '#ff4423', highlight: '#ff7a62', shadow: '#cf2307' },
+  7: { main: '#ffc423', highlight: '#ffd562', shadow: '#cf9807' }
 };
 
 enum Direction {
@@ -141,10 +141,10 @@ export default class Blocks {
     document.addEventListener('touchstart', e => this.onTouchStart(e));
     document.addEventListener('touchmove', e => this.onTouchMove(e));
     document.addEventListener('touchend', e => this.onTouchEnd(e));
-    document.addEventListener('mousedown', e => this.onClick(e));
+    document.addEventListener('mousedown', e => this.onTap(e));
   }
 
-  private onClick(e: PointerEvent) {
+  private onTap(e: MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
 
@@ -257,6 +257,9 @@ export default class Blocks {
     }
     this._yPos += rows;
     this._score += rows * 2;
+
+    // No lock-delay when dropping
+    this.mergeCurrentBlock();
   }
 
   private isValidPosition(block: number[][], xPos: number, yPos: number): boolean {
@@ -382,10 +385,26 @@ export default class Blocks {
   }
 
   renderBlock(x: number, y: number, color: BlockColor, ctx: CanvasRenderingContext2D) {
+    ctx.save();
+    ctx.translate(x * BLOCK_SIZE, y * BLOCK_SIZE);
     if (color !== 0) {
-      ctx.fillStyle = COLORS[color];
-      ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+      var blockColor = COLORS[color];
+      ctx.fillStyle = blockColor.main;
+      ctx.fillRect(1, 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+
+      ctx.fillStyle = blockColor.highlight;
+      ctx.fillRect(1, 1, BLOCK_SIZE - 2, 2);
+
+      ctx.fillStyle = blockColor.shadow;
+      ctx.fillRect(1, BLOCK_SIZE - 2, BLOCK_SIZE - 2, 2);
+
+      ctx.fillRect(4, 5, BLOCK_SIZE - 9, 2);
+      ctx.fillRect(4, BLOCK_SIZE - 6, BLOCK_SIZE - 8, 2);
+
+      ctx.fillRect(4, 5, 2, BLOCK_SIZE - 10);
+      ctx.fillRect(BLOCK_SIZE - 6, 5, 2, BLOCK_SIZE - 10);
     }
+    ctx.restore();
   }
 
   renderCurrentBlock(ctx: CanvasRenderingContext2D) {
@@ -394,7 +413,7 @@ export default class Blocks {
 
     // Render currentBlock
     this.block.forEach((row, y) => {
-      row.forEach((column, x) => this.renderBlock(x, y, column, ctx));
+      row.forEach((blockColor, x) => this.renderBlock(x, y, blockColor, ctx));
     });
     ctx.restore();
   }
@@ -409,7 +428,7 @@ export default class Blocks {
   }
 
   render(gameTime: number, ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = '#d2f0ea';
+    ctx.fillStyle = '#0b2948';
     ctx.fillRect(0, 0, this.width, this.height);
 
     // Render rows
@@ -422,7 +441,7 @@ export default class Blocks {
     }
 
     ctx.font = '20px sans-serif';
-    ctx.fillStyle = '#505e79';
+    ctx.fillStyle = '#fff';
     ctx.fillText(`${this._score}`, 15, 30);
 
     if (this._gameState === GameState.GameOver) {
