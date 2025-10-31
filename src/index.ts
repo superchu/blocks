@@ -131,6 +131,8 @@ export default class Blocks {
     this._ctx = this._canvas.getContext('2d')!;
     this._container.appendChild(this._canvas);
 
+    this._ctx.imageSmoothingEnabled = false;
+
     this.reset();
     this.bindInputs();
     this.mainloop();
@@ -413,32 +415,15 @@ export default class Blocks {
       
 
       if (!isShadowBlock) {
+        ctx.fillStyle = blockColor.highlight;
+        ctx.fillRect(0, 0, effectiveSize, 1);
 
-        ctx.strokeStyle = blockColor.highlight;
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(effectiveSize, 0);
-        ctx.stroke();
-        ctx.closePath();
+        ctx.fillStyle = blockColor.shadow;
+        ctx.fillRect(0, effectiveSize - 1, effectiveSize, 1);
 
         ctx.strokeStyle = blockColor.shadow;
-        ctx.beginPath();
-        ctx.moveTo(0, effectiveSize - 1);
-        ctx.lineTo(effectiveSize, effectiveSize - 1);
-        ctx.stroke();
-        ctx.closePath();
-
         ctx.lineWidth = 2;
-        ctx.strokeRect(padding, padding, effectiveSize - padding * 2, effectiveSize - padding * 2 - 1);
-
-        ctx.strokeStyle = blockColor.highlight;
-        ctx.beginPath();
-        ctx.moveTo(padding, padding);
-        ctx.lineTo(effectiveSize - 4, padding);
-        ctx.moveTo(padding, padding);
-        ctx.lineTo(padding,effectiveSize - 4);
-        ctx.stroke();
-        ctx.closePath();
+        ctx.strokeRect(padding, padding, effectiveSize - padding * 2, effectiveSize - padding * 2);
       }
     }
     ctx.restore();
