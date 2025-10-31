@@ -399,24 +399,36 @@ export default class Blocks {
 
   renderBlock(x: number, y: number, color: BlockType, ctx: CanvasRenderingContext2D, isShadowBlock: boolean = false) {
     ctx.save();
-    ctx.translate(x * BLOCK_SIZE, y * BLOCK_SIZE);
+    // ctx.translate(x * BLOCK_SIZE, y * BLOCK_SIZE);
+    ctx.translate((x * BLOCK_SIZE) + 1, (y * BLOCK_SIZE) + 1);
+
+    const effectiveSize = BLOCK_SIZE - 2;
+
+    const padding = (BLOCK_SIZE - effectiveSize) * 2;
+
     if (color !== 0) {
-      var blockColor = isShadowBlock ? COLORS[8] : COLORS[color];
+      const blockColor = isShadowBlock ? COLORS[8] : COLORS[color];
       ctx.fillStyle = blockColor.main;
-      ctx.fillRect(1, 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+      ctx.fillRect(0, 0, effectiveSize, effectiveSize);
+      ctx.lineWidth = 2;
 
       if (!isShadowBlock) {
-        ctx.fillStyle = blockColor.highlight;
-        ctx.fillRect(1, 1, BLOCK_SIZE - 2, 2);
 
-        ctx.fillStyle = blockColor.shadow;
-        ctx.fillRect(1, BLOCK_SIZE - 2, BLOCK_SIZE - 2, 2);
+        ctx.strokeStyle = blockColor.highlight;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(effectiveSize, 0);
+        ctx.stroke();
+        ctx.closePath();
 
-        ctx.fillRect(4, 5, BLOCK_SIZE - 9, 2);
-        ctx.fillRect(4, BLOCK_SIZE - 6, BLOCK_SIZE - 8, 2);
+        ctx.strokeStyle = blockColor.shadow;
+        ctx.beginPath();
+        ctx.moveTo(0, effectiveSize);
+        ctx.lineTo(effectiveSize, effectiveSize);
+        ctx.stroke();
+        ctx.closePath();
 
-        ctx.fillRect(4, 5, 2, BLOCK_SIZE - 10);
-        ctx.fillRect(BLOCK_SIZE - 6, 5, 2, BLOCK_SIZE - 10);
+        ctx.strokeRect(padding, padding, effectiveSize - padding * 2, effectiveSize - padding * 2 - 1);
       }
     }
     ctx.restore();
