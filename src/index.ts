@@ -410,7 +410,7 @@ export default class Blocks {
       const blockColor = isShadowBlock ? COLORS[8] : COLORS[color];
       ctx.fillStyle = blockColor.main;
       ctx.fillRect(0, 0, effectiveSize, effectiveSize);
-      ctx.lineWidth = 2;
+      
 
       if (!isShadowBlock) {
 
@@ -423,12 +423,22 @@ export default class Blocks {
 
         ctx.strokeStyle = blockColor.shadow;
         ctx.beginPath();
-        ctx.moveTo(0, effectiveSize);
-        ctx.lineTo(effectiveSize, effectiveSize);
+        ctx.moveTo(0, effectiveSize - 1);
+        ctx.lineTo(effectiveSize, effectiveSize - 1);
         ctx.stroke();
         ctx.closePath();
 
+        ctx.lineWidth = 2;
         ctx.strokeRect(padding, padding, effectiveSize - padding * 2, effectiveSize - padding * 2 - 1);
+
+        ctx.strokeStyle = blockColor.highlight;
+        ctx.beginPath();
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(effectiveSize - 4, padding);
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(padding,effectiveSize - 4);
+        ctx.stroke();
+        ctx.closePath();
       }
     }
     ctx.restore();
