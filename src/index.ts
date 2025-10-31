@@ -97,7 +97,7 @@ export default class Blocks {
       this._nextBlock = BLOCKS[Math.floor(Math.random() * BLOCKS.length)] as BlockType[][];
     }
 
-    return this._nextBlock;    
+    return this._nextBlock;
   }
 
   private get block(): BlockType[][] {
@@ -106,7 +106,7 @@ export default class Blocks {
       this._yPos = this._offset;
       this._xPos = Math.floor(((this.width / BLOCK_SIZE) - this._block[0].length) / 2);
       this._newX = this._xPos;
-      
+
       this._nextBlock = null;
     }
 
@@ -114,7 +114,7 @@ export default class Blocks {
   }
 
   private get shadowBlockY(): number {
-    var y = this._yPos;
+    let y = this._yPos;
     let rows = 0;
     while (this.isValidPosition(this.block, this._xPos, this._yPos + rows + 1)) {
       rows++;
@@ -425,7 +425,7 @@ export default class Blocks {
       const blockColor = isShadowBlock ? COLORS[8] : COLORS[color];
       ctx.fillStyle = blockColor.main;
       ctx.fillRect(0, 0, effectiveSize, effectiveSize);
-      
+
 
       if (!isShadowBlock) {
         ctx.fillStyle = blockColor.highlight;
@@ -481,26 +481,13 @@ export default class Blocks {
     const size = 10;
     ctx.save();
 
-    const nextBlockRows = this.nextBlock.filter((r) => r.some(Boolean));
-
-    var q = nextBlockRows.reduce((sum, row) => {
-      const cols = row.filter(Boolean).length;
-      if (cols > sum) {
-        sum = cols;
-      }
-
-      return sum;
-    }, 0);
-
     const blockType = this.nextBlock[0].find(Boolean);
-
-
     ctx.translate(this.width - size * 4 - 1, 1);
 
     let x = 0;
     let y = 0;
 
-    switch(blockType) {
+    switch (blockType) {
       case 1:
         x = 8;
         y = 5;
