@@ -90,12 +90,24 @@ export default class Blocks {
   private _gameState: GameState = GameState.Paused;
 
   private _block: BlockType[][] | null = null;
+  private _nextBlock: BlockType[][] | null = null;
+
+  private get nextBlock(): BlockType[][] {
+    if (!this._nextBlock) {
+      this._nextBlock = BLOCKS[Math.floor(Math.random() * BLOCKS.length)] as BlockType[][];
+    }
+
+    return this._nextBlock;    
+  }
+
   private get block(): BlockType[][] {
     if (!this._block) {
-      this._yPos = 0;
-      this._block = BLOCKS[Math.floor(Math.random() * BLOCKS.length)] as BlockType[][];
+      this._block = this.nextBlock;
+      this._yPos = this._offset;
       this._xPos = Math.floor(((this.width / BLOCK_SIZE) - this._block[0].length) / 2);
       this._newX = this._xPos;
+      
+      this._nextBlock = null;
     }
 
     return this._block;
@@ -111,6 +123,7 @@ export default class Blocks {
     return this._yPos + rows;
   }
 
+  private _offset: number = 2;
   private _newX: number = 0;
   private _xPos: number = 0;
   private _yPos: number = 0;
@@ -132,6 +145,7 @@ export default class Blocks {
     this._container.appendChild(this._canvas);
 
     this._ctx.imageSmoothingEnabled = false;
+    this._ctx.textRendering = 'geometricPrecision';
 
     this.reset();
     this.bindInputs();
@@ -145,7 +159,7 @@ export default class Blocks {
     this._score = 0;
 
     this._xPos = (this.width / BLOCK_SIZE) / 2;
-    this._yPos = 0;
+    this._yPos = this._offset;
     this.fillRows();
 
     this._gameState = GameState.Playing;
@@ -315,7 +329,7 @@ export default class Blocks {
       });
     });
 
-    this._yPos = 0;
+    this._yPos = this._offset;
     this._block = null;
     this._lockDelay = 0;
   }
@@ -386,7 +400,7 @@ export default class Blocks {
       let newY = this._yPos + 1;
       if (this.isValidPosition(this.block, this._xPos, newY)) {
         this._yPos = newY;
-      } else if (this._yPos === 0) {
+      } else if (this._yPos === this._offset) {
         this._gameState = GameState.GameOver;
       } else {
         if (this._lockDelay >= LOCK_DELAY) {
@@ -399,14 +413,13 @@ export default class Blocks {
     }
   }
 
-  renderBlock(x: number, y: number, color: BlockType, ctx: CanvasRenderingContext2D, isShadowBlock: boolean = false) {
+  renderBlock(x: number, y: number, color: BlockType, ctx: CanvasRenderingContext2D, blockSize: number, isShadowBlock: boolean = false) {
     ctx.save();
     // ctx.translate(x * BLOCK_SIZE, y * BLOCK_SIZE);
-    ctx.translate((x * BLOCK_SIZE) + 1, (y * BLOCK_SIZE) + 1);
+    ctx.translate((x * blockSize) + 1, (y * blockSize) + 1);
 
-    const effectiveSize = BLOCK_SIZE - 2;
-
-    const padding = (BLOCK_SIZE - effectiveSize) * 2;
+    const effectiveSize = blockSize - 2;
+    const padding = Math.floor(effectiveSize / 4);
 
     if (color !== 0) {
       const blockColor = isShadowBlock ? COLORS[8] : COLORS[color];
@@ -422,7 +435,9 @@ export default class Blocks {
         ctx.fillRect(0, effectiveSize - 1, effectiveSize, 1);
 
         ctx.strokeStyle = blockColor.shadow;
-        ctx.lineWidth = 2;
+        ctx.fillStyle = blockColor.shadow;
+
+        ctx.lineWidth = 0.1 * blockSize;
         ctx.strokeRect(padding, padding, effectiveSize - padding * 2, effectiveSize - padding * 2);
       }
     }
@@ -434,7 +449,7 @@ export default class Blocks {
     ctx.translate(this._xPos * BLOCK_SIZE, this._yPos * BLOCK_SIZE);
 
     this.block.forEach((row, y) => {
-      row.forEach((blockColor, x) => this.renderBlock(x, y, blockColor, ctx));
+      row.forEach((blockColor, x) => this.renderBlock(x, y, blockColor, ctx, BLOCK_SIZE));
     });
 
     ctx.restore();
@@ -447,7 +462,7 @@ export default class Blocks {
     ctx.globalAlpha = .2;
 
     this.block.forEach((row, y) => {
-      row.forEach((blockColor, x) => this.renderBlock(x, y, blockColor, ctx, true));
+      row.forEach((blockColor, x) => this.renderBlock(x, y, blockColor, ctx, BLOCK_SIZE, true));
     });
 
     ctx.restore();
@@ -455,20 +470,81 @@ export default class Blocks {
 
   private renderGameOver(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = 'rgba(255, 255, 255, .8';
-    ctx.fillRect(0, this.height / 2 - 30, this.width, 45);
+    ctx.fillRect(0, this._offset * BLOCK_SIZE + (this.height / 2 - 30), this.width, 45);
 
     ctx.font = '20px sans-serif';
     ctx.fillStyle = '#505e79';
-    ctx.fillText('Game Over!', 76, 200);
+    ctx.fillText('Game Over!', 76,  this._offset * BLOCK_SIZE + (this.height / 2 - 30) + 30);
+  }
+
+   private renderNextBlock(ctx: CanvasRenderingContext2D) {
+    const size = 10;
+    ctx.save();
+
+    const nextBlockRows = this.nextBlock.filter((r) => r.some(Boolean));
+
+    var q = nextBlockRows.reduce((sum, row) => {
+      const cols = row.filter(Boolean).length;
+      if (cols > sum) {
+        sum = cols;
+      }
+
+      return sum;
+    }, 0);
+
+    const blockType = this.nextBlock[0].find(Boolean);
+
+
+    ctx.translate(this.width - size * 4 - 1, 1);
+
+    let x = 0;
+    let y = 0;
+
+    switch(blockType) {
+      case 1:
+        x = 8;
+        y = 5;
+        break;
+      case 2:
+        x = 3;
+        y = 5;
+        break;
+
+      case 3:
+      case 4:
+      case 7:
+        x = 5;
+        y = 10;
+        break;
+      case 5:
+        x = -5;
+        y = 0;
+        break;
+      case 6:
+        x = 10;
+        y = 10;
+        break;
+    }
+
+    ctx.translate(x, y);
+
+    this.nextBlock.forEach((row, y) => {
+      row.forEach((blockColor, x) => this.renderBlock(x, y, blockColor, ctx, size));
+    });
+
+    ctx.restore();
   }
 
   render(gameTime: number, ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = '#071b2f';
+    ctx.fillRect(0, 0, this.width, this._offset * BLOCK_SIZE);
+
     ctx.fillStyle = '#0b2948';
-    ctx.fillRect(0, 0, this.width, this.height);
+    ctx.fillRect(0, this._offset * BLOCK_SIZE, this.width, this.height - this._offset * BLOCK_SIZE);
 
     // Render rows
     this._rows.forEach((row, y) => {
-      row.forEach((column, x) => this.renderBlock(x, y, column, ctx));
+      row.forEach((column, x) => this.renderBlock(x, y, column, ctx, BLOCK_SIZE));
     });
 
     if (this.block) {
@@ -476,7 +552,11 @@ export default class Blocks {
       this.renderCurrentBlock(ctx);
     }
 
-    ctx.font = '20px sans-serif';
+    if (this.nextBlock) {
+      this.renderNextBlock(ctx);
+    }
+
+    ctx.font = 'bold 16px sans-serif';
     ctx.fillStyle = '#fff';
     ctx.fillText(`${this._score}`, 15, 30);
 
@@ -487,5 +567,5 @@ export default class Blocks {
 }
 
 window.onload = () => {
-  new Blocks('#gameContainer', 260, 400);
+  new Blocks('#gameContainer', 260, 460);
 };
