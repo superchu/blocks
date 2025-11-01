@@ -131,10 +131,9 @@ export default class Blocks {
   private _level: number = 0;
   private _score: number = 0;
   private _lockDelay: number = 0;
-  private _xDown: number | null = null;
-  private _yDown: number | null = null;
   private _lastUpdate: number = Date.now();
   private _performingGesture = false;
+  private _pointers: Map<number, any> = new Map();
 
   constructor(selector: string, private width: number, private height: number) {
     this._container = document.querySelector(selector) as HTMLElement;
@@ -167,62 +166,73 @@ export default class Blocks {
 
   private bindInputs() {
     document.addEventListener('keydown', e => this.onKeyDown(e));
-    document.addEventListener('touchstart', e => this.onTouchStart(e));
-    document.addEventListener('touchmove', e => this.onTouchMove(e));
-    document.addEventListener('touchend', e => this.onTouchEnd(e));
-    document.addEventListener('mousedown', e => this.onTap(e));
+    document.addEventListener('pointerdown', e => this.onPointerDown(e));
+    document.addEventListener('pointerup', e => this.onPointerUp(e));
+    document.addEventListener('pointercancel', e => this.onPointerUp(e));
+    document.addEventListener('pointermove', e => this.onPointerMove(e));
   }
 
-  private onTap(e: MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
+  private onPointerDown(e: PointerEvent) {
+    const touch = {
+      pageX: e.pageX,
+      pageY: e.pageY,
+      didMove: false,
+    };
+    this._pointers.set(e.pointerId, touch);
+  }
 
-    if (this._gameState === GameState.Playing && !this._performingGesture) {
+  private onPointerUp(e: PointerEvent) {
+    const touch = this._pointers.get(e.pointerId);
+
+    if (this._gameState === GameState.Playing && !touch?.didMove) {
       this.rotateBlock(Direction.Right);
+    }
+    this._pointers.delete(e.pointerId);
+
+    if (this._gameState === GameState.GameOver) {
+      this.reset();
     }
   }
 
-  private onTouchStart(e: TouchEvent) {
-    e.preventDefault();
-    const { clientX, clientY } = e.touches[0];
-    this._xDown = clientX;
-    this._yDown = clientY;
-  }
-
-  private onTouchMove(e: TouchEvent) {
-    const { _xDown: xDown, _yDown: yDown } = this;
-    if (!xDown || !yDown) {
+  private onPointerMove(e: PointerEvent) {
+    const touch = this._pointers.get(e.pointerId);
+    if (!touch) {
       return;
     }
 
-    const { clientX, clientY } = e.touches[0];
-    const xDiff = xDown - clientX;
-    const yDiff = yDown - clientY;
+    const newTouch = {
+      pageX: e.pageX,
+      pageY: e.pageY,
+      didMove: touch.didMove,
+    };
+
+    const xDiff = newTouch.pageX - touch.pageX;
+    const yDiff = newTouch.pageY - touch.pageY;
+
     const sense = 5;
 
     if (Math.abs(xDiff) > Math.abs(yDiff)) {
-      if (xDiff > sense) {
+      if (xDiff < -sense) {
         this.move(this.block, Direction.Left);
-      } else if (xDiff < -sense) {
+        newTouch.didMove = true;
+      } else if (xDiff > sense) {
         this.move(this.block, Direction.Right);
+        newTouch.didMove = true;
       }
     } else {
-      if (yDiff > sense) {
-        // this.rotateBlock(Direction.Right);
-      } else if (yDiff < -sense) {
-        this.dropBlock();
+      if (!touch.movedX && !newTouch.didMove) {
+        if (yDiff > BLOCK_SIZE) {
+          this.dropBlock();
+          newTouch.didMove = true;
+          this.onPointerUp(e);
+          return;
+        }
+      } else if (yDiff > sense) {
+        this.move(this.block, Direction.Down);
       }
     }
 
-    if (Math.abs(xDiff) > sense || Math.abs(yDiff) > sense) {
-      this._performingGesture = true;
-      this._xDown = clientX;
-      this._yDown = clientY;
-    }
-  }
-
-  private onTouchEnd(e: TouchEvent) {
-    this._performingGesture = false;
+    this._pointers.set(e.pointerId, newTouch);
   }
 
   private onKeyDown(e: KeyboardEvent) {
@@ -474,10 +484,10 @@ export default class Blocks {
 
     ctx.font = '20px sans-serif';
     ctx.fillStyle = '#505e79';
-    ctx.fillText('Game Over!', 76,  this._offset * BLOCK_SIZE + (this.height / 2 - 30) + 30);
+    ctx.fillText('Game Over!', 76, this._offset * BLOCK_SIZE + (this.height / 2 - 30) + 30);
   }
 
-   private renderNextBlock(ctx: CanvasRenderingContext2D) {
+  private renderNextBlock(ctx: CanvasRenderingContext2D) {
     const size = 10;
     ctx.save();
 
