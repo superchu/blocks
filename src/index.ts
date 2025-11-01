@@ -177,8 +177,8 @@ export default class Blocks {
     e.stopPropagation();
 
     const touch = {
-      pageX: e.pageX,
-      pageY: e.pageY,
+      pageX: e.pageX / BLOCK_SIZE,
+      pageY: e.pageY / BLOCK_SIZE,
       didMove: false,
     };
     this._pointers.set(e.pointerId, touch);
@@ -210,15 +210,15 @@ export default class Blocks {
     }
 
     const newTouch = {
-      pageX: e.pageX,
-      pageY: e.pageY,
+      pageX: e.pageX / BLOCK_SIZE,
+      pageY: e.pageY / BLOCK_SIZE,
       didMove: touch.didMove,
     };
 
     const xDiff = newTouch.pageX - touch.pageX;
     const yDiff = newTouch.pageY - touch.pageY;
 
-    const sense = 5;
+    const sense = 1;
 
     if (Math.abs(xDiff) > Math.abs(yDiff)) {
       if (xDiff < -sense) {
