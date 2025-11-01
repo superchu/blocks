@@ -173,6 +173,9 @@ export default class Blocks {
   }
 
   private onPointerDown(e: PointerEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+
     const touch = {
       pageX: e.pageX,
       pageY: e.pageY,
@@ -182,6 +185,9 @@ export default class Blocks {
   }
 
   private onPointerUp(e: PointerEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const touch = this._pointers.get(e.pointerId);
 
     if (this._gameState === GameState.Playing && !touch?.didMove) {
@@ -195,6 +201,9 @@ export default class Blocks {
   }
 
   private onPointerMove(e: PointerEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const touch = this._pointers.get(e.pointerId);
     if (!touch) {
       return;
