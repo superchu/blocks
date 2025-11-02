@@ -59,16 +59,16 @@ const BLOCKS = [
 type BlockType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 const COLORS = {
-  1: { main: '#ff9423', highlight: '#ffb362', shadow: '#cf6d07' },
-  2: { main: '#b923ff', highlight: '#cd62ff', shadow: '#8f07cf' },
-  3: { main: '#919191', highlight: '#b0b0b0', shadow: '#6b6b6b' },
-  4: { main: '#238eff', highlight: '#62aeff', shadow: '#0768cf' },
-  5: { main: '#23ff61', highlight: '#62ff8f', shadow: '#07cf3e' },
-  6: { main: '#ff4423', highlight: '#ff7a62', shadow: '#cf2307' },
-  7: { main: '#ffc423', highlight: '#ffd562', shadow: '#cf9807' },
+  1: { main: '#ff9423', highlight: '#ffb362', shadow: '#cf6d07', inner: '#e78218' },
+  2: { main: '#b923ff', highlight: '#cd62ff', shadow: '#8f07cf', inner: '#a417e6' },
+  3: { main: '#919191', highlight: '#b0b0b0', shadow: '#6b6b6b', inner: '#7c7b7b' },
+  4: { main: '#238eff', highlight: '#62aeff', shadow: '#0768cf', inner: '#187ee7' },
+  5: { main: '#23ff61', highlight: '#62ff8f', shadow: '#07cf3e', inner: '#18e74e' },
+  6: { main: '#ff4423', highlight: '#ff7a62', shadow: '#cf2307', inner: '#e73018' },
+  7: { main: '#ffc423', highlight: '#ffd562', shadow: '#cf9807', inner: '#e7af18' },
 
   // Shadow-block
-  8: { main: '#fff', highlight: '#fff', shadow: '#fff' }
+  8: { main: '#fff', highlight: '#fff', shadow: '#fff', inner: '#fff' }
 };
 
 enum Direction {
@@ -441,7 +441,6 @@ export default class Blocks {
 
   renderBlock(x: number, y: number, color: BlockType, ctx: CanvasRenderingContext2D, blockSize: number, isShadowBlock: boolean = false) {
     ctx.save();
-    // ctx.translate(x * BLOCK_SIZE, y * BLOCK_SIZE);
     ctx.translate((x * blockSize) + 1, (y * blockSize) + 1);
 
     const effectiveSize = blockSize - 2;
@@ -460,8 +459,7 @@ export default class Blocks {
         ctx.fillStyle = blockColor.shadow;
         ctx.fillRect(0, effectiveSize - 1, effectiveSize, 1);
 
-        ctx.strokeStyle = blockColor.shadow;
-        ctx.fillStyle = blockColor.shadow;
+        ctx.strokeStyle = blockColor.inner;
 
         ctx.lineWidth = 0.1 * blockSize;
         ctx.strokeRect(padding, padding, effectiveSize - padding * 2, effectiveSize - padding * 2);
