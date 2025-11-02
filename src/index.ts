@@ -170,6 +170,9 @@ export default class Blocks {
     document.addEventListener('pointerup', e => this.onPointerUp(e));
     document.addEventListener('pointercancel', e => this.onPointerUp(e));
     document.addEventListener('pointermove', e => this.onPointerMove(e));
+
+    document.addEventListener('click', e => { e.preventDefault(); });
+    document.addEventListener('mousedown', e => e.preventDefault());
   }
 
   private onPointerDown(e: PointerEvent) {
@@ -177,8 +180,8 @@ export default class Blocks {
     e.stopPropagation();
 
     const touch = {
-      pageX: e.pageX / BLOCK_SIZE,
-      pageY: e.pageY / BLOCK_SIZE,
+      pageX: e.pageX,
+      pageY: e.pageY,
       didMove: false,
     };
     this._pointers.set(e.pointerId, touch);
@@ -193,6 +196,7 @@ export default class Blocks {
     if (this._gameState === GameState.Playing && !touch?.didMove) {
       this.rotateBlock(Direction.Right);
     }
+
     this._pointers.delete(e.pointerId);
 
     if (this._gameState === GameState.GameOver) {
@@ -210,38 +214,41 @@ export default class Blocks {
     }
 
     const newTouch = {
-      pageX: e.pageX / BLOCK_SIZE,
-      pageY: e.pageY / BLOCK_SIZE,
+      pageX: e.pageX,
+      pageY: e.pageY,
       didMove: touch.didMove,
     };
 
-    const xDiff = newTouch.pageX - touch.pageX;
-    const yDiff = newTouch.pageY - touch.pageY;
+    const xDiff = (newTouch.pageX - touch.pageX) / BLOCK_SIZE;
+    const yDiff = (newTouch.pageY - touch.pageY) / BLOCK_SIZE;
 
-    const sense = 0;
+    const sense = .5;
 
     if (Math.abs(xDiff) > Math.abs(yDiff)) {
       if (xDiff < -sense) {
         this.move(this.block, Direction.Left);
         newTouch.didMove = true;
+        this._pointers.set(e.pointerId, newTouch);
       } else if (xDiff > sense) {
         this.move(this.block, Direction.Right);
         newTouch.didMove = true;
+        this._pointers.set(e.pointerId, newTouch);
       }
     } else {
-      if (!touch.movedX && !newTouch.didMove) {
-        if (yDiff > BLOCK_SIZE) {
+      if (!newTouch.didMove) {
+        if (yDiff > 2) {
           this.dropBlock();
           newTouch.didMove = true;
-          this.onPointerUp(e);
+          this._pointers.set(e.pointerId, newTouch);
           return;
         }
       } else if (yDiff > sense) {
         this.move(this.block, Direction.Down);
+        this._pointers.set(e.pointerId, newTouch);
       }
     }
 
-    this._pointers.set(e.pointerId, newTouch);
+    // this._pointers.set(e.pointerId, newTouch);
   }
 
   private onKeyDown(e: KeyboardEvent) {
