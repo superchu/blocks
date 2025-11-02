@@ -218,7 +218,7 @@ export default class Blocks {
     const xDiff = newTouch.pageX - touch.pageX;
     const yDiff = newTouch.pageY - touch.pageY;
 
-    const sense = 1;
+    const sense = 0;
 
     if (Math.abs(xDiff) > Math.abs(yDiff)) {
       if (xDiff < -sense) {
