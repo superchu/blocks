@@ -171,8 +171,12 @@ export default class Blocks {
     document.addEventListener('pointercancel', e => this.onPointerUp(e));
     document.addEventListener('pointermove', e => this.onPointerMove(e));
 
-    document.addEventListener('click', e => e.preventDefault());
-    document.addEventListener('mousedown', e => e.preventDefault());
+    document.addEventListener('touchstart', e => this.onTouchStart(e), { passive: false });
+  }
+
+  private onTouchStart(e: Event) {
+    e.preventDefault();
+    e.stopPropagation();
   }
 
   private onPointerDown(e: PointerEvent) {
