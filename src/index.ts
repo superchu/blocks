@@ -171,7 +171,7 @@ export default class Blocks {
     document.addEventListener('pointercancel', e => this.onPointerUp(e));
     document.addEventListener('pointermove', e => this.onPointerMove(e));
 
-    document.addEventListener('click', e => { e.preventDefault(); });
+    document.addEventListener('click', e => e.preventDefault());
     document.addEventListener('mousedown', e => e.preventDefault());
   }
 
@@ -247,8 +247,6 @@ export default class Blocks {
         this._pointers.set(e.pointerId, newTouch);
       }
     }
-
-    // this._pointers.set(e.pointerId, newTouch);
   }
 
   private onKeyDown(e: KeyboardEvent) {
@@ -493,12 +491,25 @@ export default class Blocks {
   }
 
   private renderGameOver(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = 'rgba(255, 255, 255, .8';
-    ctx.fillRect(0, this._offset * BLOCK_SIZE + (this.height / 2 - 30), this.width, 45);
+    ctx.globalAlpha = .8;
+    ctx.fillStyle = '#04172b';
+    ctx.fillRect(0, 0, this.width, this.height);
 
-    ctx.font = '20px sans-serif';
-    ctx.fillStyle = '#505e79';
-    ctx.fillText('Game Over!', 76, this._offset * BLOCK_SIZE + (this.height / 2 - 30) + 30);
+    ctx.globalAlpha = 1;
+
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillStyle = '#fff';
+
+    const gameOverText = 'GAME OVER!';
+    const gameOverTextSize = ctx.measureText(gameOverText);
+
+    ctx.fillText(gameOverText, (this.width - gameOverTextSize.width) / 2, this._offset * BLOCK_SIZE + (this.height / 2 - 40));
+
+    ctx.font = 'bold 15px sans-serif';
+
+    const scoreText = `SCORE: ${this._score}`;
+    const scoreTextSize = ctx.measureText(scoreText);
+    ctx.fillText(scoreText, (this.width - scoreTextSize.width) / 2, this._offset * BLOCK_SIZE + (this.height / 2 - 10));
   }
 
   private renderNextBlock(ctx: CanvasRenderingContext2D) {
@@ -547,11 +558,17 @@ export default class Blocks {
   }
 
   render(gameTime: number, ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = '#071b2f';
+    ctx.clearRect(0, 0, this.width, this.height);
+
+    ctx.fillStyle = '#04172B';
     ctx.fillRect(0, 0, this.width, this._offset * BLOCK_SIZE);
 
-    ctx.fillStyle = '#0b2948';
+    ctx.globalAlpha = .5;
+
+    ctx.fillStyle = '#002D5A';
     ctx.fillRect(0, this._offset * BLOCK_SIZE, this.width, this.height - this._offset * BLOCK_SIZE);
+
+    ctx.globalAlpha = 1;
 
     // Render rows
     this._rows.forEach((row, y) => {
@@ -569,7 +586,7 @@ export default class Blocks {
 
     ctx.font = 'bold 16px sans-serif';
     ctx.fillStyle = '#fff';
-    ctx.fillText(`${this._score}`, 15, 30);
+    ctx.fillText(`${this._score}`, 15, 26);
 
     if (this._gameState === GameState.GameOver) {
       this.renderGameOver(ctx);

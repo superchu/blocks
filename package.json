@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "post-build": "node ./build/post-build.js",
-    "prepare": "rm -rf ./dist && mkdir dist",
+    "prepare": "rm -rf ./dist && mkdir dist && cp -R ./src/assets ./dist/assets",
     "dev": "yarn prepare && parcel src/index.html",
     "build": "yarn lint && yarn prepare && parcel build ./src/index.html && cp ./build/index.html ./dist && yarn post-build",
     "lint": "tslint -c tslint.json \"src/**/*.ts\""
