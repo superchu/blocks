@@ -536,7 +536,7 @@ export default class Blocks {
 
     ctx.translate(this.width - size * 4 - 1, 1);
 
-    const { x, y } = BLOCK_PREVIEW_OFFSET[blockType] ?? { x: 0, y :0};
+    const { x, y } = BLOCK_PREVIEW_OFFSET[blockType] ?? { x: 0, y: 0 };
 
     ctx.translate(x, y);
 
