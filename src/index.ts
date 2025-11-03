@@ -80,7 +80,7 @@ const BLOCK_PREVIEW_OFFSET = {
   6: { x: 10, y: 10 },
   7: { x: 5, y: 10 },
   8: { x: 0, y: 0 },
-}
+};
 
 enum Direction {
   Left,
