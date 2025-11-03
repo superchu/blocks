@@ -71,6 +71,17 @@ const COLORS = {
   8: { main: '#fff', highlight: '#fff', shadow: '#fff', inner: '#fff' }
 };
 
+const BLOCK_PREVIEW_OFFSET = {
+  1: { x: 8, y: 5 },
+  2: { x: 3, y: 5 },
+  3: { x: 5, y: 10, },
+  4: { x: 5, y: 10 },
+  5: { x: -5, y: 0 },
+  6: { x: 10, y: 10 },
+  7: { x: 5, y: 10 },
+  8: { x: 0, y: 0 },
+}
+
 enum Direction {
   Left,
   Right,
@@ -114,7 +125,6 @@ export default class Blocks {
   }
 
   private get shadowBlockY(): number {
-    let y = this._yPos;
     let rows = 0;
     while (this.isValidPosition(this.block, this._xPos, this._yPos + rows + 1)) {
       rows++;
@@ -132,7 +142,6 @@ export default class Blocks {
   private _score: number = 0;
   private _lockDelay: number = 0;
   private _lastUpdate: number = Date.now();
-  private _performingGesture = false;
   private _pointers: Map<number, any> = new Map();
 
   constructor(selector: string, private width: number, private height: number) {
@@ -349,8 +358,6 @@ export default class Blocks {
     block.forEach((row, rowY) => {
       row.forEach((column, rowX) => {
         if (column !== 0) {
-          const x = xPos + rowX;
-          const y = yPos + rowY;
 
           rows[yPos + rowY][xPos + rowX] = column;
         }
@@ -378,8 +385,8 @@ export default class Blocks {
 
     this.block.forEach((row, y) => {
       row.forEach((column, x) => {
-        let yy = direction === Direction.Right ? x : this.block.length - 1 - x;
-        let xx = direction === Direction.Right ? this.block.length - 1 - y : y;
+        const yy = direction === Direction.Right ? x : this.block.length - 1 - x;
+        const xx = direction === Direction.Right ? this.block.length - 1 - y : y;
         newBlock[yy] = newBlock[yy] || [];
         newBlock[yy][xx] = column;
       });
@@ -397,7 +404,7 @@ export default class Blocks {
     rows.forEach((row, index) => {
       if (!row.some(column => column === 0)) {
         this._rows.splice(index, 1);
-        this._rows.unshift(row.map(column => 0 as BlockType));
+        this._rows.unshift(row.map(() => 0 as BlockType));
         rowCount++;
       }
     });
@@ -517,40 +524,19 @@ export default class Blocks {
   }
 
   private renderNextBlock(ctx: CanvasRenderingContext2D) {
+
+    const blockType = this.nextBlock[0].find(Boolean);
+
+    if (!blockType) {
+      return;
+    }
+
     const size = 10;
     ctx.save();
 
-    const blockType = this.nextBlock[0].find(Boolean);
     ctx.translate(this.width - size * 4 - 1, 1);
 
-    let x = 0;
-    let y = 0;
-
-    switch (blockType) {
-      case 1:
-        x = 8;
-        y = 5;
-        break;
-      case 2:
-        x = 3;
-        y = 5;
-        break;
-
-      case 3:
-      case 4:
-      case 7:
-        x = 5;
-        y = 10;
-        break;
-      case 5:
-        x = -5;
-        y = 0;
-        break;
-      case 6:
-        x = 10;
-        y = 10;
-        break;
-    }
+    const { x, y } = BLOCK_PREVIEW_OFFSET[blockType] ?? { x: 0, y :0};
 
     ctx.translate(x, y);
 
