@@ -143,6 +143,7 @@ export default class Blocks {
   private _lockDelay: number = 0;
   private _lastUpdate: number = Date.now();
   private _pointers: Map<number, any> = new Map();
+  private _startSpeed: number = 20;
 
   constructor(selector: string, private width: number, private height: number) {
     this._container = document.querySelector(selector) as HTMLElement;
@@ -155,9 +156,21 @@ export default class Blocks {
     this._ctx.imageSmoothingEnabled = false;
     this._ctx.textRendering = 'geometricPrecision';
 
+    this.getStartSpeed();
     this.reset();
     this.bindInputs();
     this.mainloop();
+  }
+
+  private getStartSpeed() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const speed = parseInt(urlParams.get('speed') || '-1', 10);
+    if (speed === -1) {
+      this._startSpeed = 20;
+    } else {
+      // Invert speed value so that higher is faster. Speed range: 1 (slow) - 49 (fast)
+      this._startSpeed = 50 - speed;
+    }
   }
 
   private reset() {
@@ -429,7 +442,7 @@ export default class Blocks {
 
   update(gameTime: number) {
     this._xPos = this._newX;
-    const speed = Math.max(1, 20 - Math.floor(this._level));
+    const speed = Math.max(1, this._startSpeed - Math.floor(this._level));
 
     if (gameTime % speed === 0) {
       let newY = this._yPos + 1;
